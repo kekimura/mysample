@@ -13,4 +13,5 @@ jobs:
     steps:
     - name: calc deployment frequency
       run: |
-        gh api -X GET /repos/kekimura/mysample/deployments -f environment=Production >> $GITHUB_STEP_SUMMARY
+        $deploytimes = (gh api -X GET /repos/kekimura/mysample/deployments -f environment=Production -q '. | length')
+        echo "DeployFrequency: ${deploytimes}" >> $GITHUB_STEP_SUMMARY
