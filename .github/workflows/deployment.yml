@@ -8,15 +8,10 @@ on:
         default: 0
         required: false
         type: number
-      message:
-        description: 'デプロイメッセージ'
-        required: true
-        type: string
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: Production
     
     steps:
     - uses: actions/checkout@v2
@@ -28,8 +23,6 @@ jobs:
         step: start
         token: ${{ secrets.GITHUB_TOKEN }}
         env: Production
-        ref: ${{ github.head_ref }}
-        desc: ${{ inputs.message }}
 
     - name: do my deploy
       run: exit ${{ inputs.result }}
