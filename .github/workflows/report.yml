@@ -3,6 +3,9 @@ name: report
 on:
   workflow_dispatch
 
+env:
+    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   report:
     runs-on: ubuntu-latest
