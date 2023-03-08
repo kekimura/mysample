@@ -1,0 +1,253 @@
+"'Start Screen' As screen":
+    LoadingSpinnerColor: =RGBA(100, 118, 132, 1)
+
+    conWholeLayoutSS As groupContainer.verticalAutoLayoutContainer:
+        Fill: =RGBA(255, 255, 255, 1)
+        Height: =App.Height
+        LayoutDirection: =LayoutDirection.Vertical
+        LayoutMode: =LayoutMode.Auto
+        Width: =App.Width
+        ZIndex: =2
+
+        conHeaderSS As groupContainer.manualLayoutContainer:
+            AlignInContainer: =AlignInContainer.SetByContainer
+            FillPortions: =0
+            Height: =50
+            LayoutMinHeight: =80
+            LayoutMinWidth: =250
+            Width: =Parent.Width
+            ZIndex: =1
+
+            lblAppTitleSS As label:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                Color: =RGBA(255, 255, 255, 1)
+                DisabledColor: =RGBA(166, 166, 166, 1)
+                Fill: =RGBA(54, 176, 75, 1)
+                FontWeight: =FontWeight.Bold
+                Height: =50
+                PaddingLeft: =50
+                Size: =20
+                Text: ="会議記録作成アプリ"
+                Width: =1366
+                ZIndex: =1
+
+        conMain As groupContainer.horizontalAutoLayoutContainer:
+            AlignInContainer: =AlignInContainer.SetByContainer
+            Height: =768
+            LayoutMinHeight: =80
+            LayoutMinWidth: =1366
+            LayoutMode: =LayoutMode.Auto
+            Width: =App.Width
+            ZIndex: =3
+
+            conLeftSS As groupContainer.verticalAutoLayoutContainer:
+                AlignInContainer: =AlignInContainer.SetByContainer
+                BorderThickness: =1
+                Height: =Parent.Height
+                LayoutDirection: =LayoutDirection.Vertical
+                LayoutMinHeight: =50
+                LayoutMinWidth: =850
+                LayoutMode: =LayoutMode.Auto
+                Width: =2
+                ZIndex: =4
+
+                lblExplanation As label:
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    Color: =RGBA(0, 0, 0, 1)
+                    DisabledColor: =RGBA(255, 255, 255, 1)
+                    DisabledFill: =RGBA(255, 255, 255, 1)
+                    Fill: =RGBA(204, 231, 246, 1)
+                    FontWeight: =FontWeight.Semibold
+                    Height: =60
+                    Size: =15
+                    Text: ="予定表から会議を選択"
+                    Width: =Parent.Width
+                    Y: =5
+                    ZIndex: =1
+
+                dteMeetingDate As datepicker:
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    CalendarHeaderFill: =RGBA(100, 118, 132, 1)
+                    Color: =RGBA(0, 0, 0, 1)
+                    DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    DisabledFill: =RGBA(244, 244, 244, 1)
+                    Height: =60
+                    HoverDateFill: =RGBA(205, 209, 213, 1)
+                    IconBackground: =RGBA(100, 118, 132, 1)
+                    SelectedDateFill: =RGBA(100, 118, 132, 1)
+                    Size: =18
+                    StartYear: =2022
+                    X: =40
+                    ZIndex: =2
+
+                "galOutlookSchedule As gallery.'BrowseLayout_Vertical_ThreeTextVariant_ver4.0'":
+                    AlignInContainer: =AlignInContainer.SetByContainer
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    Height: =Parent.Height - lblExplanation.Height - dteMeetingDate.Height - 1
+                    Items: |-
+                        =If(
+                            IsBlank(locCalendarID),
+                            Blank(),
+                            Office365Outlook.GetEventsCalendarViewV3(
+                                locCalendarID,
+                                dteMeetingDate.SelectedDate,
+                                DateAdd(dteMeetingDate.SelectedDate, 1, TimeUnit.Days)
+                            ).value
+                        )
+                    Layout: =Layout.Vertical
+                    LayoutMinHeight: =200
+                    LayoutMinWidth: =1
+                    OnSelect: |-
+                        =NewForm(入力フォーム);
+                        Navigate('Form Screen', Transition.Pop,
+                            {
+                                locMeetingStartDateTime: ThisItem.startWithTimeZone,
+                                locMeetingEndDateTime: ThisItem.endWithTimeZone,
+                                locSubject: ThisItem.subject,
+                                locLocation: ThisItem.location,
+                                locRequiredAttendees: ThisItem.requiredAttendees,
+                                locOptionalAttendees: ThisItem.optionalAttendees
+                            }
+                        )
+                    TemplatePadding: =0
+                    TemplateSize: =Min(138, Self.Height - 60)
+                    Width: =Parent.Width
+                    X: =40
+                    ZIndex: =3
+
+                    lblSubjectSS As label:
+                        Color: =RGBA(0, 0, 0, 1)
+                        DisabledColor: =RGBA(166, 166, 166, 1)
+                        FontWeight: =FontWeight.Semibold
+                        Height: =Self.Size * 1.8
+                        OnSelect: =Select(Parent)
+                        PaddingBottom: =0
+                        PaddingLeft: =0
+                        PaddingRight: =0
+                        PaddingTop: =0
+                        Size: =20
+                        Text: =ThisItem.subject
+                        VerticalAlign: =VerticalAlign.Top
+                        Width: =Parent.TemplateWidth - 104
+                        X: =32
+                        Y: =16
+                        ZIndex: =1
+
+                    lblMeetingTimeSS As label:
+                        Color: =RGBA(0, 0, 0, 1)
+                        DisabledColor: =RGBA(166, 166, 166, 1)
+                        Height: =Self.Size * 1.8
+                        OnSelect: =Select(Parent)
+                        PaddingBottom: =0
+                        PaddingLeft: =0
+                        PaddingRight: =0
+                        PaddingTop: =0
+                        Size: =16
+                        Text: =ThisItem.startWithTimeZone & "　－　" & ThisItem.endWithTimeZone
+                        VerticalAlign: =VerticalAlign.Top
+                        Width: =Parent.TemplateWidth - 104
+                        X: =32
+                        Y: =lblSubjectSS.Y + lblSubjectSS.Height + 2
+                        ZIndex: =2
+
+                    lblLocationSS As label:
+                        Color: =RGBA(0, 0, 0, 1)
+                        DisabledColor: =RGBA(166, 166, 166, 1)
+                        Height: =35
+                        OnSelect: =Select(Parent)
+                        PaddingBottom: =0
+                        PaddingLeft: =0
+                        PaddingRight: =0
+                        PaddingTop: =0
+                        Size: =16
+                        Text: =ThisItem.location
+                        VerticalAlign: =VerticalAlign.Top
+                        Width: =Parent.TemplateWidth - 104
+                        X: =32
+                        Y: =lblMeetingTimeSS.Y + lblMeetingTimeSS.Height + 4
+                        ZIndex: =3
+
+                    icoNextArrowSS As icon.ChevronRight:
+                        AccessibleLabel: =Self.Tooltip
+                        BorderColor: =RGBA(32, 54, 71, 1)
+                        Color: =RGBA(32, 54, 71, 1)
+                        DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                        DisabledColor: =RGBA(244, 244, 244, 1)
+                        Height: =60
+                        Icon: =Icon.ChevronRight
+                        OnSelect: =Select(Parent)
+                        PaddingBottom: =10
+                        PaddingLeft: =10
+                        PaddingRight: =10
+                        PaddingTop: =10
+                        TabIndex: =0
+                        Tooltip: ="項目の詳細の表示"
+                        Width: =60
+                        X: =Parent.TemplateWidth - Self.Width - 5
+                        Y: =(Parent.TemplateHeight / 2) - (Self.Height / 2)
+                        ZIndex: =4
+
+                    sepSchedule As rectangle:
+                        BorderColor: =RGBA(32, 54, 71, 1)
+                        Fill: =RGBA(32, 54, 71, 1)
+                        Height: =1
+                        OnSelect: =Select(Parent)
+                        Width: =Parent.TemplateWidth
+                        Y: =Parent.TemplateHeight - 1
+                        ZIndex: =5
+
+            conRightSS As groupContainer.verticalAutoLayoutContainer:
+                AlignInContainer: =AlignInContainer.SetByContainer
+                BorderThickness: =1
+                Height: =Parent.Height
+                LayoutDirection: =LayoutDirection.Vertical
+                LayoutMinHeight: =50
+                LayoutMinWidth: =200
+                LayoutMode: =LayoutMode.Auto
+                Width: =2
+                ZIndex: =7
+
+                lblNewForm As label:
+                    Align: =Align.Center
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    BorderThickness: =2
+                    Color: =RGBA(0, 0, 0, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    FillPortions: =1
+                    Height: =340
+                    HoverFill: =Color.AliceBlue
+                    OnSelect: |-
+                        =NewForm(入力フォーム);
+                        Navigate('Form Screen', Transition.Pop, 
+                            { 
+                                locMeetingStartDateTime: Now(),
+                                locMeetingEndDateTime: Now(),
+                                locSubject: "",
+                                locLocation: "",
+                                locRequiredAttendees: "",
+                                locOptionalAttendees: ""
+                            }
+                        )
+                    Size: =40
+                    Text: ="新規作成"
+                    Width: =Parent.Width
+                    ZIndex: =1
+
+                lblDraftList As label:
+                    Align: =Align.Center
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    BorderThickness: =2
+                    Color: =RGBA(0, 0, 0, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    FillPortions: =1
+                    Height: =340
+                    HoverFill: =Color.AliceBlue
+                    OnSelect: |-
+                        =Refresh('SharePoint-MeetingMinutes');
+                        Navigate('Draft List Screen', Transition.Pop)
+                    Size: =40
+                    Text: ="下書き一覧"
+                    Width: =Parent.Width
+                    ZIndex: =2
+

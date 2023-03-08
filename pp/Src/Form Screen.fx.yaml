@@ -1,0 +1,1650 @@
+"'Form Screen' As screen":
+    LoadingSpinnerColor: =RGBA(100, 118, 132, 1)
+    OnVisible: |-
+        =UpdateContext({locIsFormVisible: true});
+
+    conWholeLayoutFS As groupContainer.verticalAutoLayoutContainer:
+        Fill: =RGBA(232, 244, 217, 1)
+        Height: =App.Height
+        LayoutDirection: =LayoutDirection.Vertical
+        LayoutMode: =LayoutMode.Auto
+        Width: =App.Width
+        ZIndex: =1
+
+        conHeaderFS As groupContainer.manualLayoutContainer:
+            AlignInContainer: =AlignInContainer.SetByContainer
+            FillPortions: =0
+            Height: =50
+            LayoutMinHeight: =80
+            LayoutMinWidth: =250
+            Width: |
+                =Parent.Width
+            ZIndex: =1
+
+            lblAppTitleFS As label:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                Color: =RGBA(255, 255, 255, 1)
+                DisabledColor: =RGBA(166, 166, 166, 1)
+                Fill: =RGBA(54, 176, 75, 1)
+                FontWeight: =FontWeight.Bold
+                Height: =50
+                PaddingLeft: =50
+                Size: =20
+                Text: ="会議記録作成アプリ > 会議記録入力"
+                Width: =1366
+                ZIndex: =1
+
+            btnBackFS As icon.BackArrow:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                Color: =RGBA(255, 255, 255, 1)
+                DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                DisabledColor: =RGBA(244, 244, 244, 1)
+                Height: =43
+                Icon: =Icon.BackArrow
+                OnSelect: =Back()
+                Width: =69
+                X: =1293
+                Y: =4
+                ZIndex: =2
+
+        入力フォーム As form:
+            AlignInContainer: =AlignInContainer.SetByContainer
+            BorderColor: =RGBA(32, 54, 71, 1)
+            DataSource: ='SharePoint-MeetingMinutes'
+            Item: =galDraftList.Selected
+            LayoutMinHeight: =250
+            LayoutMinWidth: =400
+            NumberOfColumns: =6
+            OnFailure: |-
+                =Notify("保存時にエラーが発生しました", NotificationType.Error, 5000);
+                UpdateContext({locIsFormVisible: true})
+            OnSuccess: |-
+                =Concurrent(
+                    RemoveIf('SharePoint-DraftQAs', 会議記録ID.Id=入力フォーム.LastSubmit.ID),
+                    RemoveIf('SharePoint-DraftExtAttendees',会議記録ID.Id=入力フォーム.LastSubmit.ID)
+                );
+                
+                Concurrent(
+                    ForAll(
+                        galExtAttendees.AllItems,
+                        Patch(
+                            'SharePoint-DraftExtAttendees',
+                            Defaults('SharePoint-DraftExtAttendees'),
+                            {
+                                会社名: txtCompanyName.Text,
+                                出席者名: txtAttendeeName.Text,
+                                会議記録ID: 
+                                {
+                                    Id: 入力フォーム.LastSubmit.ID,
+                                    Value: 入力フォーム.LastSubmit.会議名
+                                }
+                            }
+                        )
+                    ),
+                    ForAll(
+                        galQAs.AllItems,
+                        Patch(
+                            'SharePoint-DraftQAs',
+                            Defaults('SharePoint-DraftQAs');
+                            {
+                                質問者: txtQuestionName.Text,
+                                質問内容: txtQuestionContent.Text,
+                                回答者: txtAnswerName.Text,
+                                回答内容: txtAnswerContent.Text,
+                                会議記録ID: 
+                                {
+                                    Id: 入力フォーム.LastSubmit.ID,
+                                    Value: 入力フォーム.LastSubmit.会議名
+                                }
+                            }
+                        )
+                    )
+                );
+                
+                Notify(locStatus & "として保存しました", NotificationType.Success, 5000);
+                Navigate('Start Screen');
+                
+                Concurrent(
+                    Clear(colQA),
+                    Clear(colSankasya),
+                    UpdateContext({locStatus: Blank()})
+                )
+            Visible: =locIsFormVisible
+            Width: =Parent.Width
+            ZIndex: =3
+
+            ステータス_DataCard1 As typedDataCard.comboBoxViewCard:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                BorderStyle: =BorderStyle.Solid
+                DataField: ="Status"
+                Default: =ThisItem.ステータス
+                DisplayMode: =DisplayMode.View
+                DisplayName: =DataSourceInfo([@'SharePoint-MeetingMinutes'],DataSourceInfo.DisplayName,"Status")
+                Fill: =RGBA(0, 0, 0, 0)
+                Height: =50
+                Required: =false
+                Update: =DataCardValue43.Selected
+                Visible: =false
+                Width: =0
+                WidthFit: =false
+                X: =0
+                Y: =1
+                ZIndex: =1
+
+                DataCardKey55 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =34
+                    PaddingBottom: =2
+                    PaddingLeft: =2
+                    PaddingRight: =2
+                    PaddingTop: =2
+                    Size: =13
+                    Text: =Parent.DisplayName
+                    Width: =Parent.Width - 60
+                    Wrap: =false
+                    X: =30
+                    Y: =10
+                    ZIndex: =1
+
+                DataCardValue43 As combobox:
+                    BorderColor: =If(IsBlank(Parent.Error), Parent.BorderColor, Color.Red)
+                    ChevronBackground: =RGBA(100, 118, 132, 1)
+                    ChevronDisabledBackground: =RGBA(166, 166, 166, 1)
+                    ChevronDisabledFill: =RGBA(244, 244, 244, 1)
+                    ChevronHoverBackground: =ColorFade(RGBA(100, 118, 132, 1), -20%)
+                    ChevronHoverFill: =RGBA(255, 255, 255, 1)
+                    DefaultSelectedItems: |-
+                        =If(IsBlank(locStatus),
+                            Parent.Default,
+                            {Value: locStatus}
+                        )
+                    DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    DisabledFill: =RGBA(244, 244, 244, 1)
+                    DisplayFields: =["Value"]
+                    DisplayMode: =Parent.DisplayMode
+                    Fill: =RGBA(0, 0, 0, 0)
+                    HoverColor: =RGBA(0, 0, 0, 1)
+                    HoverFill: =RGBA(205, 209, 213, 1)
+                    Items: =Choices([@'SharePoint-MeetingMinutes'].ステータス)
+                    PaddingBottom: =2
+                    PaddingLeft: =If(Self.DisplayMode = DisplayMode.Edit, 2, 0)
+                    PaddingRight: =2
+                    PaddingTop: =2
+                    PressedColor: =RGBA(255, 255, 255, 1)
+                    PressedFill: =RGBA(32, 54, 71, 1)
+                    SearchFields: =["Value"]
+                    SearchItems: =Choices('SharePoint-MeetingMinutes'.ステータス,DataCardValue43.SearchText)
+                    SelectionFill: =RGBA(100, 118, 132, 1)
+                    SelectMultiple: =false
+                    Size: =13
+                    Width: =Parent.Width - 60
+                    X: =30
+                    Y: =DataCardKey55.Y + DataCardKey55.Height + 5
+                    ZIndex: =2
+
+                ErrorMessage46 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(168, 0, 0, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    FontWeight: =FontWeight.Semibold
+                    Height: =10
+                    Live: =Live.Assertive
+                    PaddingBottom: =0
+                    PaddingLeft: =0
+                    PaddingRight: =0
+                    PaddingTop: =0
+                    Text: =Parent.Error
+                    Visible: =Parent.DisplayMode=DisplayMode.Edit
+                    Width: =Parent.Width - 60
+                    X: =30
+                    Y: =DataCardValue43.Y + DataCardValue43.Height
+                    ZIndex: =3
+
+                StarVisible46 As label:
+                    Align: =Align.Center
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =DataCardKey55.Height
+                    Size: =13
+                    Text: ="*"
+                    Visible: =And(Parent.Required, Parent.DisplayMode=DisplayMode.Edit)
+                    Width: =30
+                    Wrap: =false
+                    Y: =DataCardKey55.Y
+                    ZIndex: =4
+
+            DataCard4 As typedDataCard.blankCard:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                BorderStyle: =BorderStyle.Solid
+                DisplayMode: =DisplayMode.Edit
+                DisplayName: ="会議時間"
+                Fill: =RGBA(0, 0, 0, 0)
+                Height: =73
+                Width: =681
+                X: =3
+                Y: =1
+                ZIndex: =1
+
+                dteMeetingDateFS As datepicker:
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    CalendarHeaderFill: =RGBA(100, 118, 132, 1)
+                    Color: =RGBA(0, 0, 0, 1)
+                    DefaultDate: |-
+                        =If(
+                            入力フォーム.Mode=FormMode.New,
+                            locMeetingStartDateTime,
+                            StartTime_DataCard5.Default
+                        )
+                    DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    DisabledFill: =RGBA(244, 244, 244, 1)
+                    HoverDateFill: =RGBA(205, 209, 213, 1)
+                    IconBackground: =RGBA(100, 118, 132, 1)
+                    SelectedDateFill: =RGBA(100, 118, 132, 1)
+                    Width: =200
+                    X: =30
+                    Y: =30
+                    ZIndex: =1
+
+                drpStartHour As dropdown:
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    ChevronBackground: =RGBA(100, 118, 132, 1)
+                    ChevronDisabledBackground: =RGBA(166, 166, 166, 1)
+                    ChevronDisabledFill: =RGBA(244, 244, 244, 1)
+                    ChevronHoverBackground: =ColorFade(RGBA(100, 118, 132, 1), -20%)
+                    ChevronHoverFill: =RGBA(255, 255, 255, 1)
+                    Default: |-
+                        =If(
+                            入力フォーム.Mode=FormMode.New,
+                            Hour(locMeetingStartDateTime),
+                            Text(Hour(StartTime_DataCard5.Default))
+                        )
+                    DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    DisabledFill: =RGBA(244, 244, 244, 1)
+                    HoverColor: =RGBA(0, 0, 0, 1)
+                    HoverFill: =RGBA(205, 209, 213, 1)
+                    Items: =Sequence(24, 0)
+                    PressedColor: =RGBA(255, 255, 255, 1)
+                    PressedFill: =RGBA(32, 54, 71, 1)
+                    SelectionFill: =RGBA(100, 118, 132, 1)
+                    Size: =13
+                    Width: =80
+                    X: =251
+                    Y: =30
+                    ZIndex: =2
+
+                drpStartMinute As dropdown:
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    ChevronBackground: =RGBA(100, 118, 132, 1)
+                    ChevronDisabledBackground: =RGBA(166, 166, 166, 1)
+                    ChevronDisabledFill: =RGBA(244, 244, 244, 1)
+                    ChevronHoverBackground: =ColorFade(RGBA(100, 118, 132, 1), -20%)
+                    ChevronHoverFill: =RGBA(255, 255, 255, 1)
+                    Default: |-
+                        =If(
+                            入力フォーム.Mode=FormMode.New,
+                            Minute(locMeetingStartDateTime),
+                            Minute(StartTime_DataCard5.Default)
+                        )
+                    DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    DisabledFill: =RGBA(244, 244, 244, 1)
+                    HoverColor: =RGBA(0, 0, 0, 1)
+                    HoverFill: =RGBA(205, 209, 213, 1)
+                    Items: =Sequence(60, 0)
+                    PressedColor: =RGBA(255, 255, 255, 1)
+                    PressedFill: =RGBA(32, 54, 71, 1)
+                    SelectionFill: =RGBA(100, 118, 132, 1)
+                    Size: =13
+                    Width: =80
+                    X: =356
+                    Y: =30
+                    ZIndex: =3
+
+                drpEndHour As dropdown:
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    ChevronBackground: =RGBA(100, 118, 132, 1)
+                    ChevronDisabledBackground: =RGBA(166, 166, 166, 1)
+                    ChevronDisabledFill: =RGBA(244, 244, 244, 1)
+                    ChevronHoverBackground: =ColorFade(RGBA(100, 118, 132, 1), -20%)
+                    ChevronHoverFill: =RGBA(255, 255, 255, 1)
+                    Default: |-
+                        =If(
+                            入力フォーム.Mode=FormMode.New,
+                            Hour(locMeetingEndDateTime),
+                            Hour(EndTime_DataCard1.Default)
+                        )
+                    DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    DisabledFill: =RGBA(244, 244, 244, 1)
+                    HoverColor: =RGBA(0, 0, 0, 1)
+                    HoverFill: =RGBA(205, 209, 213, 1)
+                    Items: =Sequence(24, 0)
+                    PressedColor: =RGBA(255, 255, 255, 1)
+                    PressedFill: =RGBA(32, 54, 71, 1)
+                    SelectionFill: =RGBA(100, 118, 132, 1)
+                    Size: =13
+                    Width: =80
+                    X: =463
+                    Y: =30
+                    ZIndex: =4
+
+                drpEndMinute As dropdown:
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    ChevronBackground: =RGBA(100, 118, 132, 1)
+                    ChevronDisabledBackground: =RGBA(166, 166, 166, 1)
+                    ChevronDisabledFill: =RGBA(244, 244, 244, 1)
+                    ChevronHoverBackground: =ColorFade(RGBA(100, 118, 132, 1), -20%)
+                    ChevronHoverFill: =RGBA(255, 255, 255, 1)
+                    Default: |-
+                        =If(
+                            入力フォーム.Mode=FormMode.New,
+                            Minute(locMeetingEndDateTime),
+                            Minute(EndTime_DataCard1.Default)
+                        )
+                    DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    DisabledFill: =RGBA(244, 244, 244, 1)
+                    HoverColor: =RGBA(0, 0, 0, 1)
+                    HoverFill: =RGBA(205, 209, 213, 1)
+                    Items: =Sequence(60, 0)
+                    PressedColor: =RGBA(255, 255, 255, 1)
+                    PressedFill: =RGBA(32, 54, 71, 1)
+                    SelectionFill: =RGBA(100, 118, 132, 1)
+                    Size: =13
+                    Width: =80
+                    X: =571
+                    Y: =30
+                    ZIndex: =5
+
+                DataCardKey40_1 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =34
+                    PaddingBottom: =2
+                    PaddingLeft: =2
+                    PaddingRight: =2
+                    PaddingTop: =2
+                    Size: =13
+                    Text: =Parent.DisplayName
+                    Width: =Parent.Width - 60
+                    Wrap: =false
+                    X: =30
+                    ZIndex: =6
+
+                Label7 As label:
+                    Align: =Align.Center
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    Color: =RGBA(0, 0, 0, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Size: =13
+                    Text: |-
+                        =":"
+                    Width: =27
+                    X: =329
+                    Y: =30
+                    ZIndex: =7
+
+                Label7_1 As label:
+                    Align: =Align.Center
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    Color: =RGBA(0, 0, 0, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Size: =13
+                    Text: |-
+                        =":"
+                    Width: =27
+                    X: =544
+                    Y: =30
+                    ZIndex: =8
+
+                Label7_2 As label:
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    Color: =RGBA(0, 0, 0, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Size: =13
+                    Text: ="～"
+                    Width: =27
+                    X: =437
+                    Y: =30
+                    ZIndex: =9
+
+            会議内容_DataCard3 As typedDataCard.richTextEditorEditCard:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                BorderStyle: =BorderStyle.Solid
+                DataField: ="Content"
+                Default: =ThisItem.会議内容
+                DisplayMode: =Parent.DisplayMode
+                DisplayName: =DataSourceInfo([@'SharePoint-MeetingMinutes'],DataSourceInfo.DisplayName,"Content")
+                Fill: =RGBA(0, 0, 0, 0)
+                Height: =332
+                Required: =false
+                Update: =DataCardValue46.HtmlText
+                Width: =681
+                X: =0
+                Y: =2
+                ZIndex: =1
+
+                DataCardKey58 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =34
+                    PaddingBottom: =2
+                    PaddingLeft: =2
+                    PaddingRight: =2
+                    PaddingTop: =2
+                    Size: =13
+                    Text: =Parent.DisplayName
+                    Width: =Parent.Width - 60
+                    Wrap: =false
+                    X: =30
+                    Y: =10
+                    ZIndex: =1
+
+                DataCardValue46 As richTextEditor:
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    Default: =Parent.Default
+                    DisplayMode: =Parent.DisplayMode
+                    Height: =280
+                    Width: =Parent.Width - 60
+                    X: =30
+                    Y: =DataCardKey58.Y + DataCardKey58.Height + 5
+                    ZIndex: =2
+
+                ErrorMessage48 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(168, 0, 0, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    FontWeight: =FontWeight.Semibold
+                    Height: =10
+                    Live: =Live.Assertive
+                    PaddingBottom: =0
+                    PaddingLeft: =0
+                    PaddingRight: =0
+                    PaddingTop: =0
+                    Text: =Parent.Error
+                    Visible: =Parent.DisplayMode=DisplayMode.Edit
+                    Width: =Parent.Width - 60
+                    X: =30
+                    Y: =DataCardValue46.Y + DataCardValue46.Height
+                    ZIndex: =3
+
+                StarVisible48 As label:
+                    Align: =Align.Center
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =DataCardKey58.Height
+                    Size: =13
+                    Text: ="*"
+                    Visible: =And(Parent.Required, Parent.DisplayMode=DisplayMode.Edit)
+                    Width: =30
+                    Wrap: =false
+                    Y: =DataCardKey58.Y
+                    ZIndex: =4
+
+            DataCard5 As typedDataCard.blankCard:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                BorderStyle: =BorderStyle.Solid
+                DisplayMode: =DisplayMode.Edit
+                Fill: =RGBA(0, 0, 0, 0)
+                Height: =200
+                Width: =681
+                X: =3
+                Y: =2
+                ZIndex: =1
+
+            DataCard6 As typedDataCard.blankCard:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                BorderStyle: =BorderStyle.Solid
+                DisplayMode: =DisplayMode.Edit
+                Fill: =RGBA(0, 0, 0, 0)
+                Height: =188
+                Width: =681
+                X: =3
+                Y: =3
+                ZIndex: =1
+
+            ID_DataCard2 As typedDataCard.textualViewCard:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                BorderStyle: =BorderStyle.Solid
+                DataField: ="ID"
+                Default: =ThisItem.ID
+                DisplayMode: =DisplayMode.View
+                DisplayName: =DataSourceInfo([@'SharePoint-MeetingMinutes'],DataSourceInfo.DisplayName,"ID")
+                Fill: =RGBA(0, 0, 0, 0)
+                Height: =40
+                Required: =false
+                Visible: =false
+                Width: =454
+                X: =0
+                Y: =4
+                ZIndex: =1
+
+                DataCardKey47 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =34
+                    Size: =13
+                    Text: =Parent.DisplayName
+                    Width: =Parent.Width - 60
+                    Wrap: =false
+                    X: =30
+                    Y: =10
+                    ZIndex: =1
+
+            StartTime_DataCard5 As typedDataCard.dateTimeEditCard:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                BorderStyle: =BorderStyle.Solid
+                DataField: ="StartTime"
+                Default: =ThisItem.開始日時
+                DisplayMode: =Parent.DisplayMode
+                DisplayName: =DataSourceInfo([@'SharePoint-MeetingMinutes'],DataSourceInfo.DisplayName,"StartTime")
+                Fill: =RGBA(0, 0, 0, 0)
+                Height: =50
+                Required: =false
+                Update: =dteMeetingDateFS.SelectedDate + Time(Value(drpStartHour.Selected.Value), Value(drpStartMinute.Selected.Value), 0)
+                Visible: =false
+                Width: =454
+                X: =2
+                Y: =4
+                ZIndex: =1
+
+                lblStartTimeKey As label:
+                    AutoHeight: =true
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =34
+                    Size: =13
+                    Text: =Parent.DisplayName
+                    Width: =Parent.Width - 60
+                    Wrap: =false
+                    X: =30
+                    Y: =10
+                    ZIndex: =1
+
+                lblErrorStartTime As label:
+                    AutoHeight: =true
+                    Color: =RGBA(168, 0, 0, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    FontWeight: =FontWeight.Semibold
+                    Height: =10
+                    Live: =Live.Assertive
+                    PaddingBottom: =0
+                    PaddingLeft: =0
+                    PaddingRight: =0
+                    PaddingTop: =0
+                    Text: =Parent.Error
+                    Visible: =Parent.DisplayMode=DisplayMode.Edit
+                    Width: =Parent.Width - 60
+                    X: =30
+                    Y: =lblStartTimeKey.Y + lblStartTimeKey.Height
+                    ZIndex: =6
+
+            質疑_DataCard3 As typedDataCard.richTextEditorEditCard:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                BorderStyle: =BorderStyle.Solid
+                DataField: ="QandA"
+                Default: =ThisItem.質疑
+                DisplayMode: =Parent.DisplayMode
+                DisplayName: =DataSourceInfo([@'SharePoint-MeetingMinutes'],DataSourceInfo.DisplayName,"QandA")
+                Fill: =RGBA(0, 0, 0, 0)
+                Height: =40
+                Required: =false
+                Update: |-
+                    =Concat(galQAs.AllItems, 
+                        "<p>質問内容：　" & txtQuestionContent.Text & "（質問者：" & txtQuestionName.Text & "）" &
+                        "<br/>回答内容：　" & txtAnswerContent.Text & "（回答者：" & txtAnswerName.Text & "）</p>"
+                    )
+                Visible: =false
+                Width: =454
+                X: =4
+                Y: =4
+                ZIndex: =1
+
+                DataCardKey3 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =34
+                    Size: =13
+                    Text: =Parent.DisplayName
+                    Width: =Parent.Width - 60
+                    Wrap: =false
+                    X: =30
+                    Y: =10
+                    ZIndex: =1
+
+                ErrorMessage2 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(168, 0, 0, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    FontWeight: =FontWeight.Semibold
+                    Height: =10
+                    Live: =Live.Assertive
+                    PaddingBottom: =0
+                    PaddingLeft: =0
+                    PaddingRight: =0
+                    PaddingTop: =0
+                    Text: =Parent.Error
+                    Visible: =Parent.DisplayMode=DisplayMode.Edit
+                    Width: =Parent.Width - 60
+                    X: =30
+                    Y: =DataCardKey3.Y + DataCardKey3.Height
+                    ZIndex: =3
+
+            社外出席者_DataCard2 As typedDataCard.richTextEditorEditCard:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                BorderStyle: =BorderStyle.Solid
+                DataField: ="ExternalAttendees"
+                Default: =ThisItem.社外出席者
+                DisplayMode: =Parent.DisplayMode
+                DisplayName: =DataSourceInfo([@'SharePoint-MeetingMinutes'],DataSourceInfo.DisplayName,"ExternalAttendees")
+                Fill: =RGBA(0, 0, 0, 0)
+                Height: =40
+                Required: =false
+                Update: =Concat(galExtAttendees.AllItems, "<p>" & txtCompanyName.Text & " / " & txtAttendeeName.Text & "</p>")            
+                Visible: =false
+                Width: =454
+                X: =0
+                Y: =5
+                ZIndex: =1
+
+                DataCardKey5 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =34
+                    Size: =13
+                    Text: =Parent.DisplayName
+                    Width: =Parent.Width - 60
+                    Wrap: =false
+                    X: =30
+                    Y: =10
+                    ZIndex: =1
+
+                ErrorMessage4 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(168, 0, 0, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    FontWeight: =FontWeight.Semibold
+                    Height: =10
+                    Live: =Live.Assertive
+                    PaddingBottom: =0
+                    PaddingLeft: =0
+                    PaddingRight: =0
+                    PaddingTop: =0
+                    Text: =Parent.Error
+                    Visible: =Parent.DisplayMode=DisplayMode.Edit
+                    Width: =Parent.Width - 60
+                    X: =30
+                    Y: =DataCardKey5.Y + DataCardKey5.Height
+                    ZIndex: =3
+
+            会議名_DataCard1 As typedDataCard.textualEditCard:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                BorderStyle: =BorderStyle.Solid
+                DataField: ="Title"
+                Default: |-
+                    =If(
+                        入力フォーム.Mode=FormMode.New,
+                        locSubject,
+                        ThisItem.会議名
+                    )
+                DisplayMode: =Parent.DisplayMode
+                DisplayName: =DataSourceInfo([@'SharePoint-MeetingMinutes'],DataSourceInfo.DisplayName,"Title")
+                Fill: =RGBA(0, 0, 0, 0)
+                Height: =50
+                MaxLength: =DataSourceInfo([@'SharePoint-MeetingMinutes'], DataSourceInfo.MaxLength, "Title")
+                Required: =true
+                Update: =DataCardValue28.Text
+                Width: =454
+                X: =0
+                Y: =0
+                ZIndex: =4
+
+                DataCardKey36 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =34
+                    PaddingLeft: =2
+                    PaddingTop: =2
+                    Size: =13
+                    Text: =Parent.DisplayName
+                    Width: =Parent.Width - 60
+                    Wrap: =false
+                    X: =30
+                    Y: =10
+                    ZIndex: =1
+
+                DataCardValue28 As text:
+                    BorderColor: =If(IsBlank(Parent.Error), Parent.BorderColor, Color.Red)
+                    BorderThickness: =2
+                    Color: =RGBA(0, 0, 0, 1)
+                    Default: =Parent.Default
+                    DelayOutput: =true
+                    DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    DisabledFill: =RGBA(244, 244, 244, 1)
+                    DisplayMode: =Parent.DisplayMode
+                    FocusedBorderThickness: =4
+                    HoverBorderColor: =RGBA(32, 54, 71, 1)
+                    HoverColor: =RGBA(0, 0, 0, 1)
+                    HoverFill: =RGBA(205, 209, 213, 1)
+                    MaxLength: =Parent.MaxLength
+                    PaddingBottom: =2
+                    PaddingLeft: =2
+                    PaddingRight: =2
+                    PaddingTop: =2
+                    RadiusBottomLeft: =0
+                    RadiusBottomRight: =0
+                    RadiusTopLeft: =0
+                    RadiusTopRight: =0
+                    Size: =13
+                    Tooltip: =Parent.DisplayName
+                    Width: =Parent.Width - 55
+                    X: =30
+                    Y: =DataCardKey36.Y + DataCardKey36.Height + 5
+                    ZIndex: =2
+
+                ErrorMessage33 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(168, 0, 0, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    FontWeight: =FontWeight.Semibold
+                    Height: =10
+                    Live: =Live.Assertive
+                    PaddingBottom: =0
+                    PaddingLeft: =0
+                    PaddingRight: =0
+                    PaddingTop: =0
+                    Text: =Parent.Error
+                    Visible: =Parent.DisplayMode=DisplayMode.Edit
+                    Width: =Parent.Width - 60
+                    X: =30
+                    Y: =DataCardValue28.Y + DataCardValue28.Height
+                    ZIndex: =3
+
+                StarVisible33 As label:
+                    Align: =Align.Center
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =DataCardKey36.Height
+                    Size: =13
+                    Text: ="*"
+                    Visible: =And(Parent.Required, Parent.DisplayMode=DisplayMode.Edit)
+                    Width: =30
+                    Wrap: =false
+                    Y: =DataCardKey36.Y
+                    ZIndex: =4
+
+            会議体_DataCard2 As typedDataCard.comboBoxEditCard:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                BorderStyle: =BorderStyle.Solid
+                DataField: ="MeetingType"
+                Default: =ThisItem.会議体
+                DisplayMode: =Parent.DisplayMode
+                DisplayName: =DataSourceInfo([@'SharePoint-MeetingMinutes'],DataSourceInfo.DisplayName,"MeetingType")
+                Fill: =RGBA(0, 0, 0, 0)
+                Height: =50
+                Required: =false
+                Update: =DataCardValue29.Selected
+                Width: =227
+                X: =2
+                Y: =0
+                ZIndex: =4
+
+                DataCardKey37 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =34
+                    PaddingBottom: =2
+                    PaddingLeft: =2
+                    PaddingRight: =2
+                    PaddingTop: =2
+                    Size: =13
+                    Text: =Parent.DisplayName
+                    Width: =Parent.Width - 60
+                    Wrap: =false
+                    X: =30
+                    Y: =10
+                    ZIndex: =1
+
+                DataCardValue29 As combobox:
+                    BorderColor: =If(IsBlank(Parent.Error), Parent.BorderColor, Color.Red)
+                    ChevronBackground: =RGBA(100, 118, 132, 1)
+                    ChevronDisabledBackground: =RGBA(166, 166, 166, 1)
+                    ChevronDisabledFill: =RGBA(244, 244, 244, 1)
+                    ChevronHoverBackground: =ColorFade(RGBA(100, 118, 132, 1), -20%)
+                    ChevronHoverFill: =RGBA(255, 255, 255, 1)
+                    DefaultSelectedItems: =Parent.Default
+                    DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    DisabledFill: =RGBA(244, 244, 244, 1)
+                    DisplayFields: =["Value"]
+                    DisplayMode: =Parent.DisplayMode
+                    HoverColor: =RGBA(0, 0, 0, 1)
+                    HoverFill: =RGBA(205, 209, 213, 1)
+                    Items: =Choices([@'SharePoint-MeetingMinutes'].会議体)
+                    PaddingBottom: =2
+                    PaddingLeft: =If(Self.DisplayMode = DisplayMode.Edit, 2, 0)
+                    PaddingRight: =2
+                    PaddingTop: =2
+                    PressedColor: =RGBA(255, 255, 255, 1)
+                    PressedFill: =RGBA(32, 54, 71, 1)
+                    SearchFields: =["Value"]
+                    SearchItems: =Choices('SharePoint-MeetingMinutes'.会議体,DataCardValue29.SearchText)
+                    SelectionFill: =RGBA(100, 118, 132, 1)
+                    SelectMultiple: =false
+                    Size: =13
+                    Tooltip: =Parent.DisplayName
+                    Width: =Parent.Width - 55
+                    X: =30
+                    Y: =DataCardKey37.Y + DataCardKey37.Height + 5
+                    ZIndex: =2
+
+                ErrorMessage34 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(168, 0, 0, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    FontWeight: =FontWeight.Semibold
+                    Height: =10
+                    Live: =Live.Assertive
+                    PaddingBottom: =0
+                    PaddingLeft: =0
+                    PaddingRight: =0
+                    PaddingTop: =0
+                    Text: =Parent.Error
+                    Visible: =Parent.DisplayMode=DisplayMode.Edit
+                    Width: =Parent.Width - 60
+                    X: =30
+                    Y: =DataCardValue29.Y + DataCardValue29.Height
+                    ZIndex: =3
+
+                StarVisible34 As label:
+                    Align: =Align.Center
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =DataCardKey37.Height
+                    Size: =13
+                    Text: ="*"
+                    Visible: =And(Parent.Required, Parent.DisplayMode=DisplayMode.Edit)
+                    Width: =30
+                    Wrap: =false
+                    Y: =DataCardKey37.Y
+                    ZIndex: =4
+
+            Approver_DataCard1 As typedDataCard.comboBoxEditCard:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                BorderStyle: =BorderStyle.Solid
+                DataField: ="Approver"
+                Default: =ThisItem.承認者
+                DisplayMode: =Parent.DisplayMode
+                DisplayName: =DataSourceInfo([@'SharePoint-MeetingMinutes'],DataSourceInfo.DisplayName,"Approver")
+                Fill: =RGBA(0, 0, 0, 0)
+                Height: =50
+                Required: =false
+                Update: =DataCardValue30.Selected
+                Width: =227
+                X: =3
+                Y: =0
+                ZIndex: =4
+
+                DataCardKey38 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =34
+                    PaddingBottom: =2
+                    PaddingLeft: =2
+                    PaddingRight: =2
+                    PaddingTop: =2
+                    Size: =13
+                    Text: =Parent.DisplayName
+                    Width: =Parent.Width - 60
+                    Wrap: =false
+                    X: =30
+                    Y: =10
+                    ZIndex: =1
+
+                DataCardValue30 As combobox:
+                    BorderColor: =If(IsBlank(Parent.Error), Parent.BorderColor, Color.Red)
+                    ChevronBackground: =RGBA(100, 118, 132, 1)
+                    ChevronDisabledBackground: =RGBA(166, 166, 166, 1)
+                    ChevronDisabledFill: =RGBA(244, 244, 244, 1)
+                    ChevronHoverBackground: =ColorFade(RGBA(100, 118, 132, 1), -20%)
+                    ChevronHoverFill: =RGBA(255, 255, 255, 1)
+                    DefaultSelectedItems: =Parent.Default
+                    DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    DisabledFill: =RGBA(244, 244, 244, 1)
+                    DisplayFields: =["DisplayName","Email"]
+                    DisplayMode: =Parent.DisplayMode
+                    HoverColor: =RGBA(0, 0, 0, 1)
+                    HoverFill: =RGBA(205, 209, 213, 1)
+                    Items: =colUsers
+                    PaddingBottom: =2
+                    PaddingLeft: =If(Self.DisplayMode = DisplayMode.Edit, 2, 0)
+                    PaddingRight: =2
+                    PaddingTop: =2
+                    PressedColor: =RGBA(255, 255, 255, 1)
+                    PressedFill: =RGBA(32, 54, 71, 1)
+                    SearchFields: =["DisplayName","Email"]
+                    SearchItems: =Search(colUsers,DataCardValue30.SearchText,"DisplayName","Email")
+                    SelectionFill: =RGBA(100, 118, 132, 1)
+                    SelectMultiple: =false
+                    Size: =13
+                    Template: =ListItemTemplate.Person
+                    Tooltip: =Parent.DisplayName
+                    Width: =Parent.Width - 60
+                    X: =30
+                    Y: =DataCardKey38.Y + DataCardKey38.Height + 5
+                    ZIndex: =2
+
+                ErrorMessage35 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(168, 0, 0, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    FontWeight: =FontWeight.Semibold
+                    Height: =10
+                    Live: =Live.Assertive
+                    PaddingBottom: =0
+                    PaddingLeft: =0
+                    PaddingRight: =0
+                    PaddingTop: =0
+                    Text: =Parent.Error
+                    Visible: =Parent.DisplayMode=DisplayMode.Edit
+                    Width: =Parent.Width - 60
+                    X: =30
+                    Y: =DataCardValue30.Y + DataCardValue30.Height
+                    ZIndex: =3
+
+                StarVisible35 As label:
+                    Align: =Align.Center
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =DataCardKey38.Height
+                    Size: =13
+                    Text: ="*"
+                    Visible: =And(Parent.Required, Parent.DisplayMode=DisplayMode.Edit)
+                    Width: =30
+                    Wrap: =false
+                    Y: =DataCardKey38.Y
+                    ZIndex: =4
+
+            Location_DataCard1 As typedDataCard.textualEditCard:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                BorderStyle: =BorderStyle.Solid
+                DataField: ="Location"
+                Default: |-
+                    =If(
+                        入力フォーム.Mode=FormMode.New,
+                        locLocation,
+                        ThisItem.会議場所
+                    )
+                DisplayMode: =Parent.DisplayMode
+                DisplayName: =DataSourceInfo([@'SharePoint-MeetingMinutes'],DataSourceInfo.DisplayName,"Location")
+                Fill: =RGBA(0, 0, 0, 0)
+                Height: =50
+                MaxLength: =DataSourceInfo([@'SharePoint-MeetingMinutes'], DataSourceInfo.MaxLength, "Location")
+                Required: =false
+                Update: =DataCardValue31.Text
+                Width: =454
+                X: =4
+                Y: =0
+                ZIndex: =4
+
+                DataCardKey39 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =34
+                    PaddingBottom: =2
+                    PaddingLeft: =2
+                    PaddingRight: =2
+                    PaddingTop: =2
+                    Size: =13
+                    Text: =Parent.DisplayName
+                    Width: =Parent.Width - 60
+                    Wrap: =false
+                    X: =30
+                    Y: =10
+                    ZIndex: =1
+
+                DataCardValue31 As text:
+                    BorderColor: =If(IsBlank(Parent.Error), Parent.BorderColor, Color.Red)
+                    BorderThickness: =2
+                    Color: =RGBA(0, 0, 0, 1)
+                    Default: =Parent.Default
+                    DelayOutput: =true
+                    DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    DisabledFill: =RGBA(244, 244, 244, 1)
+                    DisplayMode: =Parent.DisplayMode
+                    FocusedBorderThickness: =4
+                    HoverBorderColor: =RGBA(32, 54, 71, 1)
+                    HoverColor: =RGBA(0, 0, 0, 1)
+                    HoverFill: =RGBA(205, 209, 213, 1)
+                    MaxLength: =Parent.MaxLength
+                    PaddingBottom: =2
+                    PaddingLeft: =2
+                    PaddingRight: =2
+                    PaddingTop: =2
+                    RadiusBottomLeft: =0
+                    RadiusBottomRight: =0
+                    RadiusTopLeft: =0
+                    RadiusTopRight: =0
+                    Size: =13
+                    Tooltip: =Parent.DisplayName
+                    Width: =Parent.Width - 60
+                    X: =30
+                    Y: =DataCardKey39.Y + DataCardKey39.Height + 5
+                    ZIndex: =2
+
+                ErrorMessage36 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(168, 0, 0, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    FontWeight: =FontWeight.Semibold
+                    Height: =10
+                    Live: =Live.Assertive
+                    PaddingBottom: =0
+                    PaddingLeft: =0
+                    PaddingRight: =0
+                    PaddingTop: =0
+                    Text: =Parent.Error
+                    Visible: =Parent.DisplayMode=DisplayMode.Edit
+                    Width: =Parent.Width - 60
+                    X: =30
+                    Y: =DataCardValue31.Y + DataCardValue31.Height
+                    ZIndex: =3
+
+                StarVisible36 As label:
+                    Align: =Align.Center
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =DataCardKey39.Height
+                    Size: =13
+                    Text: ="*"
+                    Visible: =And(Parent.Required, Parent.DisplayMode=DisplayMode.Edit)
+                    Width: =30
+                    Wrap: =false
+                    Y: =DataCardKey39.Y
+                    ZIndex: =4
+
+            InternalAttendees_DataCard1 As typedDataCard.comboBoxMultiSelectEditCard:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                BorderStyle: =BorderStyle.Solid
+                DataField: ="InternalAttendees"
+                Default: |-
+                    =If(入力フォーム.Mode=FormMode.New,
+                        Filter(colUsers, Email in Split(locRequiredAttendees & ";" & locOptionalAttendees, ";")),
+                        ThisItem.社内出席者
+                    )
+                DisplayMode: =Parent.DisplayMode
+                DisplayName: =DataSourceInfo([@'SharePoint-MeetingMinutes'],DataSourceInfo.DisplayName,"InternalAttendees")
+                Fill: =RGBA(0, 0, 0, 0)
+                Height: =78
+                Required: =false
+                Update: =DataCardValue32.SelectedItems
+                Width: =681
+                X: =0
+                Y: =1
+                ZIndex: =4
+
+                DataCardKey40 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =34
+                    PaddingBottom: =2
+                    PaddingLeft: =2
+                    PaddingRight: =2
+                    PaddingTop: =2
+                    Size: =13
+                    Text: =Parent.DisplayName
+                    Width: =Parent.Width - 60
+                    Wrap: =false
+                    X: =30
+                    ZIndex: =1
+
+                DataCardValue32 As combobox:
+                    BorderColor: =If(IsBlank(Parent.Error), Parent.BorderColor, Color.Red)
+                    ChevronBackground: =RGBA(100, 118, 132, 1)
+                    ChevronDisabledBackground: =RGBA(166, 166, 166, 1)
+                    ChevronDisabledFill: =RGBA(244, 244, 244, 1)
+                    ChevronHoverBackground: =ColorFade(RGBA(100, 118, 132, 1), -20%)
+                    ChevronHoverFill: =RGBA(255, 255, 255, 1)
+                    DefaultSelectedItems: =Parent.Default
+                    DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    DisabledFill: =RGBA(244, 244, 244, 1)
+                    DisplayFields: =["DisplayName", "Email"]
+                    DisplayMode: =Parent.DisplayMode
+                    HoverColor: =RGBA(0, 0, 0, 1)
+                    HoverFill: =RGBA(205, 209, 213, 1)
+                    Items: =colUsers
+                    PaddingLeft: =If(Self.DisplayMode = DisplayMode.Edit, 5, 0)
+                    PressedColor: =RGBA(255, 255, 255, 1)
+                    PressedFill: =RGBA(32, 54, 71, 1)
+                    SearchFields: =["DisplayName", "Email"]
+                    SearchItems: =Search(colUsers,DataCardValue32.SearchText,"DisplayName","Email")
+                    SelectionFill: =RGBA(100, 118, 132, 1)
+                    Size: =13
+                    Template: =ListItemTemplate.Person
+                    Tooltip: =Parent.DisplayName
+                    Width: =Parent.Width - 60
+                    X: =30
+                    Y: =DataCardKey40.Y + DataCardKey40.Height + 5
+                    ZIndex: =2
+
+                ErrorMessage37 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(168, 0, 0, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    FontWeight: =FontWeight.Semibold
+                    Height: =10
+                    Live: =Live.Assertive
+                    PaddingBottom: =0
+                    PaddingLeft: =0
+                    PaddingRight: =0
+                    PaddingTop: =0
+                    Text: =Parent.Error
+                    Visible: =Parent.DisplayMode=DisplayMode.Edit
+                    Width: =Parent.Width - 60
+                    X: =30
+                    Y: =DataCardValue32.Y + DataCardValue32.Height
+                    ZIndex: =3
+
+                StarVisible37 As label:
+                    Align: =Align.Center
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =DataCardKey40.Height
+                    Size: =13
+                    Text: ="*"
+                    Visible: =And(Parent.Required, Parent.DisplayMode=DisplayMode.Edit)
+                    Width: =30
+                    Wrap: =false
+                    Y: =DataCardKey40.Y
+                    ZIndex: =4
+
+            添付ファイル_DataCard2 As typedDataCard.attachmentsEditCard:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                BorderStyle: =BorderStyle.Solid
+                DataField: ="{Attachments}"
+                Default: =ThisItem.添付ファイル
+                DisplayMode: =Parent.DisplayMode
+                DisplayName: =DataSourceInfo([@'SharePoint-MeetingMinutes'],DataSourceInfo.DisplayName,"{Attachments}")
+                Fill: =RGBA(0, 0, 0, 0)
+                Height: =191
+                Required: =false
+                Update: =DataCardValue36.Attachments
+                Width: =681
+                X: =0
+                Y: =3
+                ZIndex: =4
+
+                DataCardKey46 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =34
+                    Size: =13
+                    Text: =Parent.DisplayName
+                    Width: =Parent.Width - 60
+                    Wrap: =false
+                    X: =30
+                    Y: =10
+                    ZIndex: =1
+
+                DataCardValue36 As attachments:
+                    BorderColor: =If(IsBlank(Parent.Error), Parent.BorderColor, Color.Red)
+                    BorderThickness: =2
+                    DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    DisabledFill: =RGBA(244, 244, 244, 1)
+                    DisplayMode: =Parent.DisplayMode
+                    FocusedBorderThickness: =4
+                    Height: =110
+                    HoverColor: =RGBA(0, 0, 0, 1)
+                    HoverFill: =RGBA(205, 209, 213, 1)
+                    IsInDataCard: =true
+                    ItemColor: =RGBA(255, 255, 255, 1)
+                    ItemFill: =RGBA(100, 118, 132, 1)
+                    ItemHoverColor: =RGBA(0, 0, 0, 1)
+                    ItemHoverFill: =RGBA(205, 209, 213, 1)
+                    Items: =Parent.Default
+                    PaddingBottom: =5
+                    PaddingLeft: =If(Self.DisplayMode = DisplayMode.Edit, 5, 0)
+                    PaddingRight: =5
+                    PaddingTop: =5
+                    PressedColor: =RGBA(255, 255, 255, 1)
+                    PressedFill: =RGBA(32, 54, 71, 1)
+                    Tooltip: =Parent.DisplayName
+                    Width: =Parent.Width - 60
+                    X: =30
+                    Y: =DataCardKey46.Y + DataCardKey46.Height + 5
+                    ZIndex: =2
+
+                ErrorMessage42 As label:
+                    AutoHeight: =true
+                    Color: =RGBA(168, 0, 0, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    FontWeight: =FontWeight.Semibold
+                    Height: =10
+                    Live: =Live.Assertive
+                    PaddingBottom: =0
+                    PaddingLeft: =0
+                    PaddingRight: =0
+                    PaddingTop: =0
+                    Text: =Parent.Error
+                    Visible: =Parent.DisplayMode=DisplayMode.Edit
+                    Width: =Parent.Width - 60
+                    X: =30
+                    Y: =DataCardValue36.Y + DataCardValue36.Height
+                    ZIndex: =3
+
+                StarVisible42 As label:
+                    Align: =Align.Center
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =DataCardKey46.Height
+                    Size: =13
+                    Text: ="*"
+                    Visible: =And(Parent.Required, Parent.DisplayMode=DisplayMode.Edit)
+                    Width: =30
+                    Wrap: =false
+                    Y: =DataCardKey46.Y
+                    ZIndex: =4
+
+            EndTime_DataCard1 As typedDataCard.dateTimeEditCard:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                BorderStyle: =BorderStyle.Solid
+                DataField: ="EndTime"
+                Default: =ThisItem.終了日時
+                DisplayMode: =Parent.DisplayMode
+                DisplayName: =DataSourceInfo([@'SharePoint-MeetingMinutes'],DataSourceInfo.DisplayName,"EndTime")
+                Fill: =RGBA(0, 0, 0, 0)
+                Height: =50
+                Required: =false
+                Update: =dteMeetingDateFS.SelectedDate + Time(Value(drpEndHour.Selected.Value), Value(drpEndMinute.Selected.Value), 0)
+                Visible: =false
+                Width: =454
+                X: =2
+                Y: =5
+                ZIndex: =4
+
+                lblEndTImeKey As label:
+                    AutoHeight: =true
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Height: =34
+                    Size: =13
+                    Text: =Parent.DisplayName
+                    Width: =Parent.Width - 60
+                    Wrap: =false
+                    X: =30
+                    Y: =10
+                    ZIndex: =1
+
+                lblErrorEndTime As label:
+                    AutoHeight: =true
+                    Color: =RGBA(168, 0, 0, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    FontWeight: =FontWeight.Semibold
+                    Height: =10
+                    Live: =Live.Assertive
+                    PaddingBottom: =0
+                    PaddingLeft: =0
+                    PaddingRight: =0
+                    PaddingTop: =0
+                    Text: =Parent.Error
+                    Visible: =Parent.DisplayMode=DisplayMode.Edit
+                    Width: =Parent.Width - 60
+                    X: =30
+                    Y: =lblEndTImeKey.Y + lblEndTImeKey.Height
+                    ZIndex: =6
+
+    conExFormControls As groupContainer.manualLayoutContainer:
+        Height: =523
+        Visible: =locIsFormVisible
+        Width: =664
+        X: =680
+        Y: =245
+        ZIndex: =2
+
+        btnAskApproval As button:
+            DisabledBorderColor: =RGBA(166, 166, 166, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            DisabledFill: =RGBA(244, 244, 244, 1)
+            Fill: =RGBA(100, 118, 132, 1)
+            FontWeight: =FontWeight.Semibold
+            HoverColor: =RGBA(255, 255, 255, 1)
+            HoverFill: =ColorFade(RGBA(100, 118, 132, 1), -20%)
+            OnSelect: |-
+                =UpdateContext({locStatus: "レビュー中"});
+                UpdateContext({locIsFormVisible: false});
+                SubmitForm(入力フォーム)
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            Size: =15
+            Text: ="承認依頼"
+            X: =492
+            Y: =470
+            ZIndex: =1
+
+        btnSaveAsDraft As button:
+            DisabledBorderColor: =RGBA(166, 166, 166, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            DisabledFill: =RGBA(244, 244, 244, 1)
+            Fill: =RGBA(100, 118, 132, 1)
+            FontWeight: =FontWeight.Semibold
+            HoverColor: =RGBA(255, 255, 255, 1)
+            HoverFill: =ColorFade(RGBA(100, 118, 132, 1), -20%)
+            OnSelect: |-
+                =UpdateContext({locStatus: "下書き"});
+                UpdateContext({locIsFormVisible: false});
+                SubmitForm(入力フォーム)
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            Size: =15
+            Text: ="下書き保存"
+            X: =310
+            Y: =470
+            ZIndex: =2
+
+        conExtAttendees As groupContainer.manualLayoutContainer:
+            Height: =197
+            Width: =664
+            ZIndex: =5
+
+            galExtAttendees As gallery.galleryVertical:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                Height: =142
+                Items: =colSankasya
+                Layout: =Layout.Vertical
+                TemplateSize: =41
+                Width: =664
+                WrapCount: =2
+                Y: =55
+                ZIndex: =2
+
+                txtAttendeeName As text:
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    BorderThickness: =2
+                    Color: =RGBA(0, 0, 0, 1)
+                    Default: =ThisItem.会社名
+                    DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    DisabledFill: =RGBA(244, 244, 244, 1)
+                    FocusedBorderThickness: =4
+                    Height: =35
+                    HintText: ="会社名"
+                    HoverBorderColor: =RGBA(32, 54, 71, 1)
+                    HoverColor: =RGBA(0, 0, 0, 1)
+                    HoverFill: =RGBA(205, 209, 213, 1)
+                    OnSelect: =Select(Parent)
+                    Size: =13
+                    Width: =130
+                    X: =10
+                    ZIndex: =1
+
+                txtCompanyName As text:
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    BorderThickness: =2
+                    Color: =RGBA(0, 0, 0, 1)
+                    Default: =ThisItem.出席者名
+                    DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    DisabledFill: =RGBA(244, 244, 244, 1)
+                    FocusedBorderThickness: =4
+                    Height: =35
+                    HintText: ="出席者名"
+                    HoverBorderColor: =RGBA(32, 54, 71, 1)
+                    HoverColor: =RGBA(0, 0, 0, 1)
+                    HoverFill: =RGBA(205, 209, 213, 1)
+                    OnSelect: =Select(Parent)
+                    Size: =13
+                    Width: =130
+                    X: =145
+                    ZIndex: =2
+
+                Icon1_1 As icon.Trash:
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                    DisabledColor: =RGBA(244, 244, 244, 1)
+                    Height: =35
+                    Icon: =Icon.Trash
+                    OnSelect: =Remove(colSankasya, ThisItem)
+                    Width: =35
+                    X: =280
+                    ZIndex: =3
+
+            lblExtAttendees As label:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                Color: =RGBA(0, 0, 0, 1)
+                DisabledColor: =RGBA(166, 166, 166, 1)
+                Fill: =RGBA(179, 179, 179, 1)
+                FontWeight: =FontWeight.Semibold
+                Height: =18
+                Size: =13
+                Text: ="社外出席者"
+                Width: =Parent.Width
+                ZIndex: =3
+
+            icoAddExtAttendee As icon.Add:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                DisabledColor: =RGBA(244, 244, 244, 1)
+                Height: =23
+                Icon: =Icon.Edit
+                OnSelect: =Collect(colSankasya, GUID())
+                Width: =23
+                X: =10
+                Y: =25
+                ZIndex: =4
+
+            icoClearExtAttendees As icon.Add:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                DisabledColor: =RGBA(244, 244, 244, 1)
+                Height: =23
+                Icon: =Icon.CancelBadge
+                OnSelect: =Clear(colSankasya)
+                Width: =23
+                X: =50
+                Y: =25
+                ZIndex: =5
+
+        conQAs As groupContainer.manualLayoutContainer:
+            Height: =260
+            Width: =664
+            Y: =197
+            ZIndex: =6
+
+            galQAs As gallery.galleryVertical:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                Height: =200
+                Items: =colQA
+                Layout: =Layout.Vertical
+                TemplateSize: =86
+                Width: |
+                    =Parent.Width
+                Y: =55
+                ZIndex: =1
+
+                txtQuestionContent As text:
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    BorderThickness: =2
+                    Color: =RGBA(0, 0, 0, 1)
+                    Default: =ThisItem.質問内容
+                    DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    DisabledFill: =RGBA(244, 244, 244, 1)
+                    FocusedBorderThickness: =4
+                    Height: =35
+                    HintText: ="質問を入力"
+                    HoverBorderColor: =RGBA(32, 54, 71, 1)
+                    HoverColor: =RGBA(0, 0, 0, 1)
+                    HoverFill: =RGBA(205, 209, 213, 1)
+                    OnSelect: =Select(Parent)
+                    Size: =13
+                    Width: =400
+                    X: =145
+                    Y: =5
+                    ZIndex: =1
+
+                txtAnswerName As text:
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    BorderThickness: =2
+                    Color: =RGBA(0, 0, 0, 1)
+                    Default: =ThisItem.回答者
+                    DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    DisabledFill: =RGBA(244, 244, 244, 1)
+                    FocusedBorderThickness: =4
+                    Height: =35
+                    HintText: ="回答者"
+                    HoverBorderColor: =RGBA(32, 54, 71, 1)
+                    HoverColor: =RGBA(0, 0, 0, 1)
+                    HoverFill: =RGBA(205, 209, 213, 1)
+                    OnSelect: =Select(Parent)
+                    Size: =13
+                    Width: =130
+                    X: =10
+                    Y: =45
+                    ZIndex: =2
+
+                txtQuestionName As text:
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    BorderThickness: =2
+                    Color: =RGBA(0, 0, 0, 1)
+                    Default: =ThisItem.質問者
+                    DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    DisabledFill: =RGBA(244, 244, 244, 1)
+                    FocusedBorderThickness: =4
+                    Height: =35
+                    HintText: ="質問者"
+                    HoverBorderColor: =RGBA(32, 54, 71, 1)
+                    HoverColor: =RGBA(0, 0, 0, 1)
+                    HoverFill: =RGBA(205, 209, 213, 1)
+                    OnSelect: =Select(Parent)
+                    Size: =13
+                    Width: =130
+                    X: =10
+                    Y: =5
+                    ZIndex: =3
+
+                txtAnswerContent As text:
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    BorderThickness: =2
+                    Color: =RGBA(0, 0, 0, 1)
+                    Default: =ThisItem.回答内容
+                    DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    DisabledFill: =RGBA(244, 244, 244, 1)
+                    FocusedBorderThickness: =4
+                    Height: =35
+                    HintText: ="回答を入力"
+                    HoverBorderColor: =RGBA(32, 54, 71, 1)
+                    HoverColor: =RGBA(0, 0, 0, 1)
+                    HoverFill: =RGBA(205, 209, 213, 1)
+                    OnSelect: =Select(Parent)
+                    Size: =13
+                    Width: =400
+                    X: =145
+                    Y: =45
+                    ZIndex: =4
+
+                Icon1 As icon.Trash:
+                    BorderColor: =RGBA(32, 54, 71, 1)
+                    Color: =RGBA(32, 54, 71, 1)
+                    DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                    DisabledColor: =RGBA(244, 244, 244, 1)
+                    Height: =45
+                    Icon: =Icon.Trash
+                    OnSelect: =Remove(colQA, ThisItem)
+                    Width: =45
+                    X: =579
+                    Y: =21
+                    ZIndex: =5
+
+            lblQAs As label:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                Color: =RGBA(0, 0, 0, 1)
+                DisabledColor: =RGBA(166, 166, 166, 1)
+                Fill: =RGBA(179, 179, 179, 1)
+                FontWeight: =FontWeight.Semibold
+                Height: =18
+                Size: =13
+                Text: ="質疑応答"
+                Width: =Parent.Width
+                ZIndex: =2
+
+            icoAddQA As icon.Add:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                DisabledColor: =RGBA(244, 244, 244, 1)
+                Height: =23
+                Icon: =Icon.Edit
+                OnSelect: =Collect(colQA, GUID());
+                Width: =23
+                X: =10
+                Y: =25
+                ZIndex: =3
+
+            icoResetQAs As icon.Add:
+                BorderColor: =RGBA(32, 54, 71, 1)
+                DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                DisabledColor: =RGBA(244, 244, 244, 1)
+                Height: =23
+                Icon: =Icon.CancelBadge
+                OnSelect: =Clear(colQA)
+                Width: =23
+                X: =50
+                Y: =25
+                ZIndex: =4
+
+    conNowSaving As groupContainer.manualLayoutContainer:
+        Visible: =!locIsFormVisible
+        X: =400
+        Y: =300
+        ZIndex: =3
+
+        lblNowSaving As label:
+            BorderColor: =RGBA(32, 54, 71, 1)
+            Color: =RGBA(0, 0, 0, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Height: =37
+            Size: =20
+            Text: ="保存しています..."
+            Width: =267
+            X: =183
+            Y: =73
+            ZIndex: =1
+
+        icoSave As icon.Save:
+            BorderColor: =RGBA(32, 54, 71, 1)
+            Color: =RGBA(32, 54, 71, 1)
+            DisabledBorderColor: =RGBA(166, 166, 166, 1)
+            DisabledColor: =RGBA(244, 244, 244, 1)
+            Icon: =Icon.Save
+            X: =92
+            Y: =59
+            ZIndex: =2
+

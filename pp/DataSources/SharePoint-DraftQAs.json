@@ -1,0 +1,48 @@
+[
+  {
+    "ApiId": "/providers/microsoft.powerapps/apis/shared_sharepointonline",
+    "CdpRevision": {
+      "BaseUrl": "/",
+      "LastChangedTimeString": "2022-12-19T18:06:44.1320000Z",
+      "RevisionNumber": 1
+    },
+    "ConnectedDataSourceInfoNameMapping": {
+      "{Attachments}": "添付ファイル",
+      "{Attachments}@odata.type": "{Attachments} ({Attachments}@odata.type)",
+      "{FilenameWithExtension}": "拡張子付きのファイル名",
+      "{FullPath}": "完全パス ",
+      "{HasAttachments}": "添付ファイルあり",
+      "{Identifier}": "識別子",
+      "{IsFolder}": "フォルダーである",
+      "{Link}": "アイテムへのリンク",
+      "{ModerationComment}": "このリスト アイテムのコンテンツの承認に関連付けられているコメント",
+      "{ModerationStatus}": "コンテンツの承認状態",
+      "{Name}": "名前",
+      "{Path}": "フォルダーのパス",
+      "{Thumbnail}": "サムネイル",
+      "{TriggerWindowEndToken}": "ウィンドウ終了のトークンのトリガー",
+      "{TriggerWindowStartToken}": "ウィンドウ開始のトークンのトリガー",
+      "{VersionNumber}": "バージョン番号",
+      "Answer": "回答内容",
+      "AnswerPerson": "回答者",
+      "Author": "登録者",
+      "Author#Claims": "登録者 Claims",
+      "ComplianceAssetId": "コンプライアンス資産 ID",
+      "Created": "登録日時",
+      "Editor": "更新者",
+      "Editor#Claims": "更新者 Claims",
+      "ID": "ID",
+      "Modified": "更新日時",
+      "MoMID": "会議記録ID",
+      "MoMID#Id": "会議記録ID Id",
+      "Question": "質問内容",
+      "Title": "質問者"
+    },
+    "DatasetName": "https://democsuappinnovation.sharepoint.com/sites/kekimura-demo-com",
+    "EncodeDataset": true,
+    "IsSampleData": false,
+    "IsWritable": true,
+    "Name": "SharePoint-DraftQAs",
+    "Type": "ConnectedDataSourceInfo"
+  }
+]

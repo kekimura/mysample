@@ -1,0 +1,94 @@
+{
+  "045c7bf6-72af-4b5e-a90d-f1208408267b": {
+    "connectionParameters": {
+      "sku": "Enterprise"
+    },
+    "connectionRef": {
+      "apiTier": "Standard",
+      "displayName": "Office 365 グループ",
+      "iconUri": "https://connectoricons-prod.azureedge.net/releases/v1.0.1621/1.0.1621.3191/office365groups/icon.png",
+      "id": "/providers/microsoft.powerapps/apis/shared_office365groups",
+      "parameterHints": {},
+      "parameterHintsV2": {}
+    },
+    "datasets": {},
+    "dataSources": [
+      "Office365グループ"
+    ],
+    "dependencies": {},
+    "dependents": [],
+    "id": "045c7bf6-72af-4b5e-a90d-f1208408267b"
+  },
+  "220a5512-d435-43bc-b161-aa3c0e984da9": {
+    "connectionParameters": {
+      "sku": "Enterprise"
+    },
+    "connectionRef": {
+      "apiTier": "Standard",
+      "displayName": "SharePoint",
+      "iconUri": "https://connectoricons-prod.azureedge.net/u/juanq/gateway/greyhound/3000.150.11/1.0.1613.3116/sharepointonline/icon.png",
+      "id": "/providers/microsoft.powerapps/apis/shared_sharepointonline",
+      "parameterHints": {},
+      "parameterHintsV2": {}
+    },
+    "datasets": {
+      "https://democsuappinnovation.sharepoint.com/sites/kekimura-demo-com": {
+        "datasetOverride": {
+          "environmentVariableName": "sample_SharePointSite",
+          "name": "https://democsuappinnovation.sharepoint.com/sites/kekimura-demo-com"
+        },
+        "dataSources": {
+          "SharePoint-DraftExtAttendees": {
+            "tableName": "8f64ebb9-b7a2-419b-add9-8b814bd0ed7a",
+            "tableNameOverride": {
+              "environmentVariableName": "sample_SharePointDraftExtAttendees",
+              "name": "8f64ebb9-b7a2-419b-add9-8b814bd0ed7a"
+            }
+          },
+          "SharePoint-DraftQAs": {
+            "tableName": "0836ea66-37ad-40d8-b2ec-f983031eaf5d",
+            "tableNameOverride": {
+              "environmentVariableName": "sample_SharePointDraftQAs",
+              "name": "0836ea66-37ad-40d8-b2ec-f983031eaf5d"
+            }
+          },
+          "SharePoint-MeetingMinutes": {
+            "tableName": "334891ce-a9b9-4ba7-a412-001b5eb4fc90",
+            "tableNameOverride": {
+              "environmentVariableName": "sample_SharePoint-MeetingMinutes",
+              "name": "334891ce-a9b9-4ba7-a412-001b5eb4fc90"
+            }
+          }
+        }
+      }
+    },
+    "dataSources": [
+      "SharePoint-MeetingMinutes",
+      "SharePoint-DraftExtAttendees",
+      "SharePoint-DraftQAs"
+    ],
+    "dependencies": {},
+    "dependents": [],
+    "id": "220a5512-d435-43bc-b161-aa3c0e984da9"
+  },
+  "ef951978-a92b-4a5e-a29a-af5a95ea5a3d": {
+    "connectionParameters": {
+      "sku": "Enterprise"
+    },
+    "connectionRef": {
+      "apiTier": "Standard",
+      "displayName": "Office 365 Outlook",
+      "iconUri": "https://connectoricons-prod.azureedge.net/releases/v1.0.1618/1.0.1618.3179/office365/icon.png",
+      "id": "/providers/microsoft.powerapps/apis/shared_office365",
+      "parameterHints": {},
+      "parameterHintsV2": {}
+    },
+    "datasets": {},
+    "dataSources": [
+      "Office365Outlook"
+    ],
+    "dependencies": {},
+    "dependents": [],
+    "id": "ef951978-a92b-4a5e-a29a-af5a95ea5a3d"
+  }
+}

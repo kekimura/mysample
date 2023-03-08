@@ -1,0 +1,22 @@
+App As appinfo:
+    BackEnabled: =false
+    OnStart: |-
+        =ClearCollect(colCalendarLocalizedLabel, { Value: "Calendar" }, { Value: "予定表" });
+        Concurrent(
+            Set(locCalendarID,
+                LookUp(
+                    Office365Outlook.CalendarGetTables().value,
+                    DisplayName=LookUp(colCalendarLocalizedLabel,
+                    Value=DisplayName).Value
+                ).Name
+            ),
+            ClearCollect(colUsers,
+                RenameColumns(
+                    AddColumns(Office365グループ.ListGroupMembers("0b9f5152-fd1c-4867-bc8f-10d8d42fe68a", {'$top': 999}).value, "Claims", mail),
+                    "mail", "Email",
+                    "displayName", "DisplayName"
+                )
+            )
+        )
+    StartScreen: ='Start Screen'
+
